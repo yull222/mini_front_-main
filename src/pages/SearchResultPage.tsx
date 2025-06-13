@@ -2,7 +2,7 @@ import { useState } from "react";
 import NewsFetcher from "../newsfetchingcomponents/NewsFetcher";
 import SearchHistoryFetcher from "../newsfetchingcomponents/SearchHistoryFetcher";
 
-export default function HistoryCard({ uriEncodedString }: { uriEncodedString: string }) {
+export default function SearchResultPage({ uriEncodedString }: { uriEncodedString: string }) {
   const [showHistory, setShowHistory] = useState(false);
 
   return (

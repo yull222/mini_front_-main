@@ -1,9 +1,11 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Header from "./components/Header";
 import Footer from "./components/Footer";
-import NewsPage from "./newsfetchingcomponents/NewsPage";
 import LoginForm from "./signcomponents/Login";
 import SignupForm from "./signcomponents/SignupForm";
+import NewsPage from "./newsfetchingcomponents/NewsPage";
+import SearchResultPageWrapper from "./pages/SearchResultPageWrapper";
+import MainPage from "./MainPage";
 
 export default function App() {
   return (
@@ -12,10 +14,13 @@ export default function App() {
         <Header />
         <main className="flex-grow flex justify-center items-center">
           <Routes>
-            <Route path="/" element={<NewsPage />} />
+            <Route path="/" element={<MainPage />} />  
+            <Route path="/news" element={<NewsPage />} />
+            <Route path="/search" element={<SearchResultPageWrapper />} /> 
             <Route path="/login" element={<LoginForm />} />
             <Route path="/signup" element={<SignupForm />} />
           </Routes>
+          
         </main>
         <Footer />
       </BrowserRouter>

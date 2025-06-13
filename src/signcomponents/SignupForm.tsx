@@ -15,7 +15,7 @@ export default function SignupForm() {
       return;
     }
     if (password.length < 6) {
-      alert("비밀번호는 6자 이상이어야 합니다.");
+      alert("비밀번호 글자수 오류.");
       return;
     }
 
@@ -56,7 +56,7 @@ export default function SignupForm() {
         />
         <input
           type="password"
-          placeholder="비밀번호 (6자 이상)"
+          placeholder="비밀번호"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           className="w-full border p-2 rounded mb-4"

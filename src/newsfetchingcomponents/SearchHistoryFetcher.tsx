@@ -25,10 +25,10 @@ export default function SearchHistoryFetcher({ currentQuery }: Props) {
 
     const fetchHistory = async () => {
       try {
-        const res = await fetch(`/api/history?userId=${userId}`);
+        const res = await fetch(`http://10.125.121.190:8080/api/history?userId=${userId}`);
         const data: HistoryItem[] = await res.json();
 
-        // 1️⃣ 현재 검색어와 같은 query만 필터링
+       
         const matched = data
           .filter((item) => item.query === decodeURI(currentQuery))
           .map((item) => JSON.parse(item.resultJson) as newsInfo[]);

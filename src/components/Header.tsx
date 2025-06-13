@@ -13,7 +13,10 @@ export default function Header() {
 
   return (
     <header className="relative bg-red-200 text-gray-800 py-8 shadow-md">
-      <h1 className="text-3xl font-bold text-center tracking-wider">
+       <h1
+        className="text-3xl font-bold text-center tracking-wider cursor-pointer hover:text-blue-700 transition"
+        onClick={() => navigate("/")}
+      >
         📰 News Pocket
       </h1>
 

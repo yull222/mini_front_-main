@@ -87,10 +87,12 @@ export default function NewsFetcher({ uriEncodedString }: newsFetcherProps) {
   }
 };
 
-
-  return (
-    <div className="w-11/12 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mt-6">
+return (
+  <div className="w-full flex justify-center mt-6">
+    <div className="w-full max-w-6xl grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 px-4">
       {tags}
     </div>
-  );
+  </div>
+);
+
 }
