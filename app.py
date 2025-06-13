@@ -143,7 +143,7 @@ class GeminiSummarizer:
         
         return prompt
     
-    def gemini_summarize(self, text: str, length: str = 'medium', style: str = 'neutral') -> Dict:
+    def gemini_summarize(self, text: str, length: str = 'short', style: str = 'neutral') -> Dict:
         """Gemini API를 사용한 고품질 요약"""
         self._clean_expired_cache()
         

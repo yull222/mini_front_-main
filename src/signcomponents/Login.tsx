@@ -7,29 +7,34 @@ export default function LoginForm() {
   const navigate = useNavigate();
 
   const loginHandler = async (e: React.FormEvent) => {
-    e.preventDefault();
+  e.preventDefault();
 
-    try {
-      const res = await fetch("/auth/signin", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, password }),
-      });
+  try {
+    const res = await fetch("http://10.125.121.190:8080/auth/signin", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json", // 공백 제거, 토큰 제거
+      },
+      body: JSON.stringify({ username, password }),
+    });
 
-      if (res.ok) {
-        const data = await res.json(); // 백엔드에서 { token, userId } 형태로 응답하도록
-        localStorage.setItem("token", data.token);
-        localStorage.setItem("userId", data.userId); //userId 저장
-        alert("로그인 성공");
-        navigate("/");
-      } else {
-        alert("로그인 실패: 아이디 또는 비밀번호를 확인하세요.");
-      }
-    } catch (err) {
-      console.error("로그인 에러:", err);
-      alert("로그인 중 오류 발생");
+    if (res.ok) {
+      const data = await res.json();
+      console.log("로그인 응답:", data);
+
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("userId", data.userId); // 여기 구조 맞춰 저장
+      alert("로그인 성공");
+      navigate("/");
+    } else {
+      alert("로그인 실패: 아이디 또는 비밀번호를 확인하세요.");
     }
-  };
+  } catch (err) {
+    console.error("로그인 에러:", err);
+    alert("로그인 중 오류 발생");
+  }
+};
+
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100">
