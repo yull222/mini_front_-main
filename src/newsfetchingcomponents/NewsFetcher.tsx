@@ -86,10 +86,14 @@ export default function NewsFetcher({ uriEncodedString }: newsFetcherProps) {
         //"Authorization": token,//"Authorization": `Bearer ${token}`
       },
       body: JSON.stringify({
-        userId,
-        query: decodeURI(uriEncodedString),
-        results: items.map(({ id, ...rest }) => rest), // ← id 제외
-      }),
+        'userId': userId,
+        'query': decodeURI(uriEncodedString),
+        'results': items.map(({ id, ...rest }) => rest), //   id 제외하고 저장    
+        //'resultJson': JSON.stringify(items.map(({ id, ...rest }) => rest)), // id 제외하고 JSON으로 저장
+        
+
+      }),    
+
     });
   } catch (err) {
     console.error("백엔드 저장 실패:", err);

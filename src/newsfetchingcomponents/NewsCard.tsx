@@ -50,7 +50,13 @@ export default function NewsCard({ data }: dataProps) {
   return (
     <div className="bg-white shadow-md rounded-lg p-4 m-2 hover:scale-105 transition-transform duration-200">
       <h2 className="text-lg font-semibold text-gray-800 mb-2">
-        {data.title.replace(/<b>/g, "").replace(/<\/b>/g, "").replace(/&quot;/g, '"')}
+         <a
+    href={data.originallink || data.link}
+    target="_blank"
+    rel="noopener noreferrer"
+    className="hover:text-blue-600 underline"
+  >
+        {data.title.replace(/<b>/g, "").replace(/<\/b>/g, "").replace(/&quot;/g, '"')}</a>
       </h2>
       <p className="text-sm text-gray-500">{data.pubDate}</p>
 
