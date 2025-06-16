@@ -1,39 +1,47 @@
+//히스트로 저장
+//NewsPage에서 뉴스 결과를 보여줌 
+//네이버 api 호출, 받은거로 뉴스카드 그리기 
 import { useEffect, useState, type ReactNode } from "react";
-import NewsCard from "./NewsCard";
+import NewsCard from "./NewsCard"; 
 
+//검색어 받을 거
 export interface newsFetcherProps {
   uriEncodedString: string;
 }
 
+//뉴스 하나에 담을 객체 자료형 타입 정의하기
 export type newsInfo = {
   title: string;
   originallink: string;
   link: string;
   description: string;
   pubDate: string;
-  id: string; // 프론트 전용으로 생성
+  id: string; // 프론트 자체적으로 만든거
 };
 
 export default function NewsFetcher({ uriEncodedString }: newsFetcherProps) {
-  const apikey: string = import.meta.env.VITE_APP_APIKEY;
+  const apikey: string = import.meta.env.VITE_APP_APIKEY; // 환경변수에서 API 키 가져오기
 
+  // 네이버 뉴스 검색 API 호출을 위한 헤더 설정
   const myHeaders: Headers = new Headers();
   myHeaders.append("X-Naver-Client-Id", "qQ0rDJDLUQdGBC0U6Ndl");
   myHeaders.append("X-Naver-Client-Secret", apikey);
 
+  //fetch 요청 옵션 설정 네이버 뉴스 검색 API는 GET 방식
   const requestOptions = {
     method: "GET",
     headers: myHeaders,
   };
 
-  const [news, setNews] = useState<newsInfo[] | undefined>();
+  const [news, setNews] = useState<newsInfo[] | undefined>(); //뉴스 데이터들을 저장할 상태,  이 데이터를 업데이트할 함수
 
   const fetchHandler = async () => {
     try {
+      // 네이버 뉴스 검색 API 호출
       const resp: Response = await fetch(`/v1/search/news.json?query=${uriEncodedString}&display=12`, requestOptions);
-      const jsn = await resp.json();
+      const jsn = await resp.json(); //  여기서 API 응답 JSON 전체 받음
 
-      // id 추가해서 뉴스 배열 생성
+      // 프론트에서 쓸 id 추가해서 뉴스 배열 생성
       const itemsWithId: newsInfo[] = jsn.items.map((item: any, idx: number) => ({
         ...item,
         id: `${item.title}_${item.pubDate}_${idx}`,
@@ -75,6 +83,7 @@ export default function NewsFetcher({ uriEncodedString }: newsFetcherProps) {
       headers: {
         "Content-Type": "application/json",
         "Authorization": token,
+        //"Authorization": token,//"Authorization": `Bearer ${token}`
       },
       body: JSON.stringify({
         userId,

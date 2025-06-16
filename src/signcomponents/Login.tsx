@@ -12,20 +12,18 @@ export default function LoginForm() {
   try {
     const res = await fetch("http://10.125.121.190:8080/auth/signin", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json", // 공백 제거, 토큰 제거
-      },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ username, password }),
     });
 
+    console.log(" 응답 상태코드:", res.status); // <-- 여기 추가!
+
     if (res.ok) {
       const data = await res.json();
-      console.log("로그인 응답:", data);
-
       localStorage.setItem("token", data.token);
-      localStorage.setItem("userId", data.userId); // 여기 구조 맞춰 저장
+      localStorage.setItem("userId", data.userId);
       alert("로그인 성공");
-      navigate("/");
+      navigate("/news"); // 원하는 페이지로 이동
     } else {
       alert("로그인 실패: 아이디 또는 비밀번호를 확인하세요.");
     }

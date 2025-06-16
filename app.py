@@ -86,6 +86,7 @@ class GeminiSummarizer:
             response = session.get(url, timeout=20, allow_redirects=True)
             response.raise_for_status()
             response.encoding = response.apparent_encoding
+            response.encoding = 'utf-8'  # 강제 설정
             
             # readability로 주요 콘텐츠 추출
             doc = Document(response.text)
@@ -247,7 +248,9 @@ class GeminiSummarizer:
 
 # 전역 요약기 인스턴스
 summarizer = GeminiSummarizer()
-
+@app.route('/')
+def home():
+    return 'Flask summarizer is running!'
 @app.route('/summarize', methods=['POST'])
 @limiter.limit("15 per minute")
 def summarize_url():
@@ -302,6 +305,7 @@ def summarize_url():
                 'style': style,
                 'use_ai': use_ai
             },
+            
             'timestamp': datetime.now().isoformat()
         }), 200
         
