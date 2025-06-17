@@ -22,12 +22,22 @@ export default function Header() {
 
       <div className="absolute right-4 bottom-2 flex gap-3">
         {isLoggedIn ? (
+           <>
+          
+            <button
+              onClick={() => navigate("/scrap")}
+              className="text-sm px-3 py-1 bg-pink-500 text-white rounded hover:bg-pink-600 transition"
+            >
+              스크랩
+            </button>
+
           <button
             onClick={handleLogout}
             className="text-sm px-3 py-1 bg-yellow-500 text-white rounded hover:bg-red-600 transition"
           >
             로그아웃
           </button>
+          </>
         ) : (
           <>
             <button
