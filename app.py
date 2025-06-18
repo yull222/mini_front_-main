@@ -40,7 +40,7 @@ class GeminiSummarizer:
 
         # Gemini 모델 초기화
         if GOOGLE_API_KEY:
-            self.model = genai.GenerativeModel("gemini-pro")
+            self.model = genai.GenerativeModel("gemini-2.5-flash")
 
             # 생성 설정
             self.generation_config = genai.types.GenerationConfig(

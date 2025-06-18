@@ -1,39 +1,44 @@
 import { useEffect, useState } from "react";
 import NewsCard from "../newsfetchingcomponents/NewsCard";
-import type { newsInfo } from "../newsfetchingcomponents/NewsFetcher"; 
-
+import AliceCarousel from "react-alice-carousel";
+import "react-alice-carousel/lib/alice-carousel.css";
 import { useNavigate } from "react-router-dom";
 
 interface HistoryItem {
-  id: string;
-  query: string;
-  resultJson: string;
-  searchedAt: string;
+  title: string;
+  originallink: string;
+  link: string;
+  description: string;
+  pubDate: string;
 }
 
 interface Props {
   currentQuery: string;
 }
 
+const handleDragStart = (e: Event) => e.preventDefault();
+
 export default function SearchHistoryFetcher({ currentQuery }: Props) {
-  const [filteredNews, setFilteredNews] = useState<newsInfo[][]>([]);
+  const [history, setHistory] = useState<HistoryItem[] | []>();
+  const [pages, setPages] = useState<number>(0);
+  const [now, setNow] = useState<number>(1);
   const navigate = useNavigate();
   const userId = localStorage.getItem("userId");
+
+  const Gallery = () => <AliceCarousel mouseTracking items={cards} />;
 
   useEffect(() => {
     if (!userId || !currentQuery) return;
 
     const fetchHistory = async () => {
       try {
-        const res = await fetch(`http://10.125.121.190:8080/api/history?userId=${userId}`);
-        const data: HistoryItem[] = await res.json();
-
-       
-        const matched = data
-          .filter((item) => item.query === decodeURI(currentQuery))
-          .map((item) => JSON.parse(item.resultJson) as newsInfo[]);
-
-        setFilteredNews(matched);
+        const res = await fetch(
+          `http://10.125.121.190:8080/api/history?username=${userId}&query=${currentQuery}&idx=${now}`
+        );
+        const data: { pages: number; results: HistoryItem[] } =
+          await res.json();
+        setHistory(data.results);
+        setPages(data.pages);
       } catch (err) {
         console.error("히스토리 불러오기 실패:", err);
       }
@@ -57,20 +62,14 @@ export default function SearchHistoryFetcher({ currentQuery }: Props) {
       </div>
     );
   }
-
+  const cards = history?.map((item) => (
+    <NewsCard data={item} key={item.link} />
+  ));
   return (
-    <div className="grid grid-cols-1 gap-4">
-      {filteredNews.length > 0 ? (
-        filteredNews.map((newsList, idx) => (
-          <div key={idx}>
-            {newsList.map((item) => (
-              <NewsCard key={item.id} data={item} />
-            ))}
-          </div>
-        ))
-      ) : (
-        <div className="text-gray-500">이전 검색 기록이 없습니다.</div>
-      )}
+    <div className="flex flex-col">
+      <div className="grid grid-cols-3 gap-4">
+        {!history ? <div> 검색 기록이 없습니다 </div> : Gallery()}
+      </div>
     </div>
   );
 }
