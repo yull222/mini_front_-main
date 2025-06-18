@@ -84,7 +84,7 @@ export default function Scrap() {
               rel="noopener noreferrer"
               className="block text-base font-semibold text-blue-700 hover:underline mb-2"
             >
-              {item.title.replace(/<b>/g, "").replace(/<\/b>/g, "")}
+              {item.title?.replace(/<b>/g, "").replace(/<\/b>/g, "")}
             </a>
             <p className="text-sm text-gray-600 mb-2">{item.pubDate}</p>
             <p className="text-sm text-gray-700 whitespace-pre-line">

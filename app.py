@@ -40,7 +40,7 @@ class GeminiSummarizer:
 
         # Gemini 모델 초기화
         if GOOGLE_API_KEY:
-            self.model = genai.GenerativeModel("gemini-pro")
+            self.model = genai.GenerativeModel("gemini-2.5-flash")
 
             # 생성 설정
             self.generation_config = genai.types.GenerationConfig(
@@ -303,7 +303,7 @@ def summarize_url():
             result = summarizer.gemini_summarize(text_content, length, style)
             summary = result["summary"]
             summary_method = (
-                f"AI 요약 (Gemini Pro)"
+                f"AI 요약 (Gemini)"
                 if result["success"]
                 else "추출 요약 (AI 실패로 대체)"
             )

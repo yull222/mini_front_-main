@@ -16,7 +16,7 @@ export type newsInfo = {
   link: string;
   description: string;
   pubDate: string;
-  id: string; // 프론트 자체적으로 만든거
+  id?: string; // 프론트 자체적으로 만든거
 };
 
 export default function NewsFetcher({ uriEncodedString }: newsFetcherProps) {
@@ -70,12 +70,7 @@ export default function NewsFetcher({ uriEncodedString }: newsFetcherProps) {
   if (!userId || !token) {
     console.warn("userId 또는 token 없음");
     return;
-  }
-  console.log("저장 보낼 데이터:", {
-  userId,
-  query: decodeURI(uriEncodedString),
-  results: items.map(({ id, ...rest }) => rest),
-});
+  };
 
   try {
     await fetch("http://10.125.121.190:8080/api/history", {
