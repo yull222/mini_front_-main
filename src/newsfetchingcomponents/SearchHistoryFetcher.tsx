@@ -25,7 +25,12 @@ export default function SearchHistoryFetcher({ currentQuery }: Props) {
   const navigate = useNavigate();
   const userId = localStorage.getItem("userId");
 
-  const Gallery = () => <AliceCarousel mouseTracking items={cards} />;
+  const Gallery = () => (
+    <AliceCarousel
+      mouseTracking
+      items={[<div className="grid grid-cols-3 gap-4">{cards}</div>]}
+    />
+  );
 
   useEffect(() => {
     if (!userId || !currentQuery) return;
@@ -67,9 +72,7 @@ export default function SearchHistoryFetcher({ currentQuery }: Props) {
   ));
   return (
     <div className="flex flex-col">
-      <div className="grid grid-cols-3 gap-4">
-        {!history ? <div> 검색 기록이 없습니다 </div> : Gallery()}
-      </div>
+      <div>{!history ? <div> 검색 기록이 없습니다 </div> : Gallery()}</div>
     </div>
   );
 }
