@@ -131,11 +131,11 @@ export default function NewsCard({ data }: dataProps) {
       const summaryData = await summaryRes.json();
 
       // 2. 받은 요약 포함해서 스크랩 저장
-      const res = await fetch("http://localhost:8081/api/like", {
+      const res = await fetch("http://10.125.121.190:8080/api/liked", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          userId,
+          username: userId,
           title: data.title,
           link: data.link,
           originallink: data.originallink,
@@ -152,7 +152,7 @@ export default function NewsCard({ data }: dataProps) {
     } else {
       // 해제
       const res = await fetch(
-        `http://localhost:8081/api/like?userId=${userId}&link=${encodeURIComponent(data.link)}`,
+        `http://10.125.121.190:8080/api/liked?username=${userId}&link=${encodeURIComponent(data.link)}`,
         { method: "DELETE" }
       );
 
@@ -177,7 +177,7 @@ export default function NewsCard({ data }: dataProps) {
     const checkScrap = async () => {
       try {
         const res = await fetch(
-          `http://localhost:8081/api/like/check?userId=${encodeURIComponent(
+          `http://10.125.121.190:8080/api/liked/check?username=${encodeURIComponent(
             userId
           )}&link=${encodeURIComponent(data.link)}`
         );

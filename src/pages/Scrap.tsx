@@ -24,7 +24,7 @@ export default function Scrap() {
     }
 
     try {
-      const resp = await fetch(`http://localhost:8081/api/like?userId=${userId}`);
+      const resp = await fetch(`http://10.125.121.190:8080/api/liked?username=${userId}`);
       if (!resp.ok) throw new Error("불러오기 실패");
       const jsn = await resp.json();
       setNews(jsn);
@@ -36,11 +36,12 @@ export default function Scrap() {
     }
   };
 
-  const handleDelete = async (id: number) => {
+  const handleDelete = async (id: number, link:string) => {
   try {
-    const res = await fetch(`http://localhost:8081/api/like/${id}`, {
-      method: "DELETE"
-    });
+    const res = await fetch(
+        `http://10.125.121.190:8080/api/liked?username=${userId}&link=${encodeURIComponent(link)}`,
+        { method: "DELETE" }
+      );
     if (res.ok) {
       setNews(prev => prev.filter(item => item.id !== id));
     } else {
@@ -91,7 +92,7 @@ export default function Scrap() {
             </p>
 
             {/* 스크랩 해제 버튼 */}
-            <button onClick={() => handleDelete(item.id)}>❌</button>
+            <button onClick={() => handleDelete(item.id, item.link)}>❌</button>
           </div>
         ))}
       </div>
