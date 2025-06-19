@@ -10,6 +10,7 @@ export default function NewsCard({ data }: dataProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [scraped, setScraped] = useState(false);
+  const token = localStorage.getItem("token");
 
   const summarizeHandler = async () => {
     if (!data?.link) {
@@ -106,80 +107,88 @@ export default function NewsCard({ data }: dataProps) {
 };
 */
 
-   const scrapHandler = async () => {
-  const userId = localStorage.getItem("userId");
-  if (!userId) {
-    alert("로그인이 필요합니다.");
-    return;
-  }
-
-  try {
-    if (!scraped) {
-      // 1. Gemini 요약 먼저 받아오기
-      const summaryRes = await fetch("http://localhost:5000/summarize", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          url: data.link,
-          length: "short",
-          style: "neutral",
-          use_ai: true,
-        }),
-      });
-
-      if (!summaryRes.ok) throw new Error("요약 실패");
-      const summaryData = await summaryRes.json();
-
-      // 2. 받은 요약 포함해서 스크랩 저장
-      const res = await fetch("http://10.125.121.190:8080/api/liked", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          username: userId,
-          title: data.title,
-          link: data.link,
-          originallink: data.originallink,
-          pubDate: data.pubDate,
-          summary: summaryData.summary || "요약 없음",
-        }),
-      });
-
-      if (res.ok) {
-        setScraped(true);
-      } else {
-        alert("스크랩 실패");
-      }
-    } else {
-      // 해제
-      const res = await fetch(
-        `http://10.125.121.190:8080/api/liked?username=${userId}&link=${encodeURIComponent(data.link)}`,
-        { method: "DELETE" }
-      );
-
-      if (res.ok) {
-        setScraped(false);
-      } else {
-        alert("스크랩 해제 실패");
-      }
+  const scrapHandler = async () => {
+    const userId = localStorage.getItem("userId");
+    if (!userId || !token) {
+      alert("로그인이 필요합니다.");
+      return;
     }
-  } catch (err) {
-    console.error("스크랩 토글 오류:", err);
-    alert("오류 발생");
-  }
-};
 
+    try {
+      if (!scraped) {
+        // 1. Gemini 요약 먼저 받아오기
+        const summaryRes = await fetch("http://localhost:5000/summarize", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            url: data.link,
+            length: "short",
+            style: "neutral",
+            use_ai: true,
+          }),
+        });
+
+        if (!summaryRes.ok) throw new Error("요약 실패");
+        const summaryData = await summaryRes.json();
+
+        // 2. 받은 요약 포함해서 스크랩 저장
+        const res = await fetch("http://10.125.121.190:8080/api/liked", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Authorization: token },
+          body: JSON.stringify({
+            username: userId,
+            title: data.title,
+            link: data.link,
+            originallink: data.originallink,
+            pubDate: data.pubDate,
+            summary: summaryData.summary || "요약 없음",
+          }),
+        });
+
+        if (res.ok) {
+          setScraped(true);
+        } else {
+          alert("스크랩 실패");
+        }
+      } else {
+        // 해제
+        const res = await fetch(
+          `http://10.125.121.190:8080/api/liked?username=${userId}&link=${encodeURIComponent(
+            data.link
+          )}`,
+          { method: "DELETE" }
+        );
+
+        if (res.ok) {
+          setScraped(false);
+        } else {
+          alert("스크랩 해제 실패");
+        }
+      }
+    } catch (err) {
+      console.error("스크랩 토글 오류:", err);
+      alert("오류 발생");
+    }
+  };
 
   // 처음 렌더링 시 스크랩 여부 확인
   useEffect(() => {
     const userId = localStorage.getItem("userId");
-    if (!userId) return;
+    if (!userId || !token) return;
 
     const checkScrap = async () => {
       try {
         const res = await fetch(
           `http://10.125.121.190:8080/api/liked/check?username=${encodeURIComponent(
             userId
-          )}&link=${encodeURIComponent(data.link)}`
+          )}&link=${encodeURIComponent(data.link)}`,
+          {
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: token,
+              //"Authorization": token,//"Authorization": `Bearer ${token}`
+            },
+          }
         );
         if (!res.ok) throw new Error("스크랩 여부 확인 실패");
 
@@ -202,7 +211,10 @@ export default function NewsCard({ data }: dataProps) {
           rel="noopener noreferrer"
           className="hover:text-blue-600 underline"
         >
-          {data.title.replace(/<b>/g, "").replace(/<\/b>/g, "").replace(/&quot;/g, '"')}
+          {data.title
+            .replace(/<b>/g, "")
+            .replace(/<\/b>/g, "")
+            .replace(/&quot;/g, '"')}
         </a>
       </h2>
       <p className="text-sm text-gray-500">{data.pubDate}</p>

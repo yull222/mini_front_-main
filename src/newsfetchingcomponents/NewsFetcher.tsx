@@ -7,6 +7,7 @@ import NewsCard from "./NewsCard";
 //검색어 받을 거
 export interface newsFetcherProps {
   uriEncodedString: string;
+  pageSetter?:(pages:searchHistory[]) => void;
 }
 
 //뉴스 하나에 담을 객체 자료형 타입 정의하기
@@ -19,7 +20,13 @@ export type newsInfo = {
   id?: string; // 프론트 자체적으로 만든거
 };
 
-export default function NewsFetcher({ uriEncodedString }: newsFetcherProps) {
+//history save 후 돌아오는 Response 타입 정의
+export type searchHistory = {
+  id:number;
+  timestamp:string;
+}
+
+export default function NewsFetcher({ uriEncodedString, pageSetter }: newsFetcherProps) {
   const apikey: string = import.meta.env.VITE_APP_APIKEY; // 환경변수에서 API 키 가져오기
 
   // 네이버 뉴스 검색 API 호출을 위한 헤더 설정
@@ -36,6 +43,7 @@ export default function NewsFetcher({ uriEncodedString }: newsFetcherProps) {
   const [news, setNews] = useState<newsInfo[] | undefined>(); //뉴스 데이터들을 저장할 상태,  이 데이터를 업데이트할 함수
 
   const fetchHandler = async () => {
+    console.log("fetchHandler called");
     try {
       // 네이버 뉴스 검색 API 호출
       const resp: Response = await fetch(`/v1/search/news.json?query=${uriEncodedString}&display=12`, requestOptions);
@@ -64,6 +72,7 @@ export default function NewsFetcher({ uriEncodedString }: newsFetcherProps) {
     : <div></div>;
 
  const saveHistory = async (items: newsInfo[]) => {
+  console.log("saveHistoryCalled");
   const userId = localStorage.getItem("userId");
   const token = localStorage.getItem("token");
 
@@ -73,23 +82,22 @@ export default function NewsFetcher({ uriEncodedString }: newsFetcherProps) {
   };
 
   try {
-    await fetch("http://10.125.121.190:8080/api/history", {
+    const response = await fetch("http://10.125.121.190:8080/api/history", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": token,
+        "Authorization": token, 
         //"Authorization": token,//"Authorization": `Bearer ${token}`
       },
       body: JSON.stringify({
-        'userId': userId,
+        'username': userId,
         'query': decodeURI(uriEncodedString),
         'results': items.map(({ id, ...rest }) => rest), //   id 제외하고 저장    
         //'resultJson': JSON.stringify(items.map(({ id, ...rest }) => rest)), // id 제외하고 JSON으로 저장
-        
-
-      }),    
-
+      }),
     });
+    const data:searchHistory[] = await response.json();
+    if(pageSetter) pageSetter(data);
   } catch (err) {
     console.error("백엔드 저장 실패:", err);
   }

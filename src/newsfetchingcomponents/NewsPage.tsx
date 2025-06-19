@@ -3,19 +3,21 @@
 
 import { useState, useEffect } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
-import NewsFetcher from "./NewsFetcher"; //뉴스 api호출 컴포넌트
+import NewsFetcher, { type searchHistory } from "./NewsFetcher"; //뉴스 api호출 컴포넌트
 import SearchHistoryFetcher from "./SearchHistoryFetcher"; //히스토리 api호출 컴포넌트
+import SearchHistoryFetcherCopy from "./SearchHistoryFetcher_copy";
 
 export default function NewsPage() {
   const [params] = useSearchParams(); // useSearchParams로 URL의 쿼리 파라미터navigate("/news?query=검색어") 읽음
   const queryFromURL = params.get("query") || ""; // 쿼리 파라미터에서 'query' 값을 가져옴, 없으면 빈 문자열 언디파인되는거 방지하려고씀
   const [inputValue, setInputValue] = useState(queryFromURL); //검색입력한값 텍스트 저장하는 상태
-  const [showHistory, setShowHistory] = useState(false); //히스토리 보기 버튼 눌렀는지 저장하는거 만들기 
+  const [showHistory, setShowHistory] = useState(false); //히스토리 보기 버튼 눌렀는지 저장하는거 만들기
   const userId = localStorage.getItem("userId"); //로그인됐는지보려고
-  const navigate = useNavigate(); //검색누르면 다시 호출하게 만들어야 
+  const navigate = useNavigate(); //검색누르면 다시 호출하게 만들어야
+  const [pages, setPages] = useState<searchHistory[]>([]);
 
- //검색어 창에 값 바꿔주게 만들어야 함 
- //검색어 창에 값이 들어가는게 좋을거같음
+  //검색어 창에 값 바꿔주게 만들어야 함
+  //검색어 창에 값이 들어가는게 좋을거같음
   useEffect(() => {
     setInputValue(queryFromURL);
   }, [queryFromURL]);
@@ -23,8 +25,8 @@ export default function NewsPage() {
   const onSubmitHandle = (e: React.FormEvent) => {
     e.preventDefault(); // 폼제출하고 페이지 새로고침 방지
     //공백제거해주는거
-    
-    const trimmed = inputValue.trim(); 
+
+    const trimmed = inputValue.trim();
     if (trimmed) {
       navigate(`/news?query=${encodeURIComponent(trimmed)}`);
     }
@@ -34,15 +36,21 @@ export default function NewsPage() {
     <div className="w-full min-h-screen flex flex-col items-center bg-gray-50 p-4">
       {/* 검색 폼 
       검색 폼을 제출하면 동작하게  */}
-      <form onSubmit={onSubmitHandle} className="mb-6 flex gap-2 w-full max-w-xl">
+      <form
+        onSubmit={onSubmitHandle}
+        className="mb-6 flex gap-2 w-full max-w-xl"
+      >
         <input
           type="text"
-          value={inputValue}  //입력창의 값은 inputValue 로 관리
+          value={inputValue} //입력창의 값은 inputValue 로 관리
           onChange={(e) => setInputValue(e.target.value)} //입력창을 수정하면 setInputValue()
           className="flex-grow border px-3 py-2 rounded"
           placeholder="검색 입력..."
         />
-        <button type="submit" className="bg-blue-500 text-white px-4 py-2 rounded">
+        <button
+          type="submit"
+          className="bg-blue-500 text-white px-4 py-2 rounded"
+        >
           검색
         </button>
       </form>
@@ -67,22 +75,20 @@ export default function NewsPage() {
       showHistory가 true이고 userId가 존재하면 현재 검색 결과와 과거 검색 기록을 보여주는게 안됨 ㅇㅇㅇㅇㅇㅇ됨
       */}
       {queryFromURL && (
-        showHistory && userId ? (
-          <div className="w-full flex flex-col md:flex-row gap-6">
-            <div className="w-full md:w-1/2">
+        <div className="w-full flex flex-col md:flex-row gap-6">
+          <div className={showHistory && userId ? "w-full md:w-1/2" : "w-full"}>
+            {showHistory && userId && (
               <h2 className="text-xl font-bold mb-2">현재 검색 결과</h2>
-              <NewsFetcher uriEncodedString={encodeURIComponent(queryFromURL)} />
-            </div>
+            )}
+            <NewsFetcher uriEncodedString={encodeURIComponent(queryFromURL)} pageSetter={setPages} />
+          </div>
+          {showHistory && userId && (
             <div className="w-full md:w-1/2">
               <h2 className="text-xl font-bold mb-2">과거 검색 기록</h2>
-              <SearchHistoryFetcher currentQuery={queryFromURL} />
+              <SearchHistoryFetcherCopy pages={pages} />
             </div>
-          </div>
-        ) : (
-          <div className="w-full">
-            <NewsFetcher uriEncodedString={encodeURIComponent(queryFromURL)} /> {/* 뉴스 호출해서 뉴스 카드 리스트를 보여주는거 props로전달uriEncodedString*/}
-          </div>
-        )
+          )}
+        </div>
       )}
     </div>
   );
