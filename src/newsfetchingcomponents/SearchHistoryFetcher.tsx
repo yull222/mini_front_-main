@@ -16,7 +16,7 @@ interface Props {
   currentQuery: string;
 }
 
-const handleDragStart = (e: Event) => e.preventDefault();
+// const handleDragStart = (e: Event) => e.preventDefault();
 
 export default function SearchHistoryFetcher({ currentQuery }: Props) {
   const [history, setHistory] = useState<HistoryItem[] | []>();

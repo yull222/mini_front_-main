@@ -15,16 +15,23 @@ export default function Scrap() {
   const [error, setError] = useState<string | null>(null);
 
   const userId = localStorage.getItem("userId");
+  const token = localStorage.getItem("token");
 
   const fetchScrapHistory = async () => {
-    if (!userId) {
+    if (!userId||!token) {
       setError("로그인이 필요합니다.");
       setLoading(false);
       return;
     }
 
     try {
-      const resp = await fetch(`http://10.125.121.190:8080/api/liked?username=${userId}`);
+      const resp = await fetch(
+        `http://10.125.121.190:8080/api/liked?username=${userId}`,{headers: {
+        "Content-Type": "application/json",
+        "Authorization": token, 
+        //"Authorization": token,//"Authorization": `Bearer ${token}`
+      },}
+      );
       if (!resp.ok) throw new Error("불러오기 실패");
       const jsn = await resp.json();
       setNews(jsn);
@@ -36,23 +43,22 @@ export default function Scrap() {
     }
   };
 
-  const handleDelete = async (id: number, link:string) => {
-  try {
-    const res = await fetch(
+  const handleDelete = async (id: number, link: string) => {
+    try {
+      const res = await fetch(
         `http://10.125.121.190:8080/api/liked?username=${userId}&link=${encodeURIComponent(link)}`,
         { method: "DELETE" }
       );
-    if (res.ok) {
-      setNews(prev => prev.filter(item => item.id !== id));
-    } else {
-      alert("스크랩 해제 실패");
+      if (res.ok) {
+        setNews((prev) => prev.filter((item) => item.id !== id));
+      } else {
+        alert("스크랩 해제 실패");
+      }
+    } catch (err) {
+      console.error("스크랩 해제 오류:", err);
+      alert("오류 발생");
     }
-  } catch (err) {
-    console.error("스크랩 해제 오류:", err);
-    alert("오류 발생");
-  }
-};
-
+  };
 
   useEffect(() => {
     fetchScrapHistory();
@@ -60,7 +66,9 @@ export default function Scrap() {
 
   return (
     <div className="min-h-screen bg-gray-100 p-8">
-      <h2 className="text-2xl font-bold text-gray-800 mb-6">❤️ 내가 스크랩한 뉴스</h2>
+      <h2 className="text-2xl font-bold text-gray-800 mb-6">
+        ❤️ 내가 스크랩한 뉴스
+      </h2>
 
       {loading && <p className="text-gray-500">불러오는 중...</p>}
       {error && (
@@ -99,7 +107,6 @@ export default function Scrap() {
     </div>
   );
 }
-
 
 /*
 
