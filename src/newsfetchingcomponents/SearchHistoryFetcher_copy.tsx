@@ -17,29 +17,42 @@ interface Props {
   pages: searchHistory[];
 }
 
+const LoadingPlaceholder = () => (
+  <div className="flex justify-center items-center h-400px">
+    <p className="text-gray-400 italic">Loading…</p>
+  </div>
+);
+
+const NewsGrid = ({data}:{data:HistoryItem[]}) => (
+  <div className="grid grid-cols-3 gap-4 p-2">
+    {data.map((item) => <NewsCard data={item} key={item.link} />)}
+  </div>
+);
+
 export default function SearchHistoryFetcherCopy({ pages }: Props) {
+  console.log(pages);
   const navigate = useNavigate();
   const userId = localStorage.getItem("userId");
   const token = localStorage.getItem("token");
 
   const [activeIndex, setActiveIndex] = useState(1);
-  const [historyData, setHistoryData] = useState<HistoryItem[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
   const carouselRef = useRef<AliceCarousel>(null);
+  const [dataCache, setDataCache] = useState<{[pageId:string]:HistoryItem[]}>({});
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    if (!token || !pages || pages.length === 0) {
-      setIsLoading(false);
-      return;
-    }
+    if (!token || !pages || pages.length === 0) return;
+
+    const pageToFetch = pages[activeIndex];
+    if(!pageToFetch) return;
+
+    if(dataCache[pageToFetch.id]) return;
 
     const fetchHistory = async () => {
       setIsLoading(true);
-      setHistoryData([]);
       try {
-        const pageNow = pages[activeIndex].id;
         const resp = await fetch(
-          `http://10.125.121.190:8080/api/history?id=${pageNow}`,
+          `http://10.125.121.190:8080/api/history?id=${pageToFetch.id}`,
           {
             headers: {
               "Content-Type": "application/json",
@@ -47,18 +60,20 @@ export default function SearchHistoryFetcherCopy({ pages }: Props) {
             },
           }
         );
-        if (!resp.ok) throw new Error(`failed to load history: ${resp.status}`);
+        if (!resp.ok) throw new Error(`failed to fetch history: ${resp.status}`);
         const data:HistoryItem[] = await resp.json();
-        setHistoryData(data);
+        setDataCache(prevCache => ({
+          ...prevCache,
+          [pageToFetch.id]:data
+        }));
       } catch (err) {
         console.error("failed to pull data: ", err);
-        setHistoryData([]);
       } finally {
         setIsLoading(false);
       }
     };
     fetchHistory();
-  }, [activeIndex, pages, token]); // pages, token??
+  }, [activeIndex, pages, token, dataCache]);
 
   const onSlideChanged = (e: { item: number }) => {
     if (e.item !== activeIndex) {
@@ -67,15 +82,11 @@ export default function SearchHistoryFetcherCopy({ pages }: Props) {
   };
 
   const slidePrev = () => {
-    if (!isLoading) {
       carouselRef.current?.slidePrev();
-    }
   };
 
   const slideNext = () => {
-    if (!isLoading) {
       carouselRef.current?.slideNext();
-    }
   };
 
   if (!userId) {
@@ -100,25 +111,18 @@ export default function SearchHistoryFetcherCopy({ pages }: Props) {
     );
   }
 
-  const activePageContent = (
-    <div className="grid grid-cols-3 gap-4 p-2">
-      {isLoading ? (
-        <p className="col-span-full text-center text-gray-400 italic p-8">
-          Now Loading…
-        </p>
-      ) : (
-        historyData.map((item) => <NewsCard data={item} key={item.link} />)
-      )}
-    </div>
-  );
+  const activePageData = dataCache[pages[activeIndex]?.id];
+
+  let activePageContent;
+  if (activePageData) activePageContent = <NewsGrid data={activePageData} />;
+  else activePageContent = <LoadingPlaceholder />;
 
   const carouselItems = pages.map((page, index) => (
-    <div key={page.id} className="w-full" data-value={index}>
-      {index === activeIndex ? (
-        activePageContent
-      ) : (
-        <div className="h-400px"/>
-      )}
+    <div key={page.id} className="w-full h-400px">
+      {index === activeIndex
+      ? activePageContent
+      : null
+    }
     </div>
   ));
 
@@ -144,97 +148,6 @@ export default function SearchHistoryFetcherCopy({ pages }: Props) {
         </button>
       </div>
       <AliceCarousel ref={carouselRef} items={carouselItems} activeIndex={activeIndex} onSlideChanged={onSlideChanged} mouseTracking disableDotsControls disableButtonsControls animationDuration={400} />
-    </div>
-  );
-  // if (!token) return;
-  // const Carousel = () => {
-  //   const [history, setHistory] = useState<HistoryItem[] | []>();
-  //   const [now, setNow] = useState<number>(1);
-  //   const fetchHistory = async () => {
-  //     try {
-  //       const resp = await fetch(
-  //         `http://10.125.121.190:8080/api/history?id=${pages[now].id}`,
-  //         {
-  //           headers: {
-  //             "Content-Type": "application/json",
-  //             Authorization: token,
-  //           },
-  //         }
-  //       );
-  //       const data: HistoryItem[] = await resp.json();
-  //       console.log(data);
-  //       setHistory(data);
-  //     } catch (err) {
-  //       console.error("히스토리 불러오기 실패:", err);
-  //     }
-  //   };
-  //   useEffect(() => {
-  //     fetchHistory();
-  //   }, []);
-
-  //   const slidePrev = () => {
-  //     if (now <= 1) {
-  //       console.log("bounded");
-  //       return;
-  //     }
-  //     setNow(now - 1);
-  //     fetchHistory();
-  //   };
-  //   const slideNext = () => {
-  //     if (now >= pages.length) {
-  //       console.log("bounded");
-  //       return;
-  //     }
-  //     setNow(now + 1);
-  //     fetchHistory();
-  //   };
-  //   console.log(pages[now].timestamp);
-  //   const cards = history?.map((item) => (
-  //     <NewsCard data={item} key={item.link} />
-  //   ));
-  //   const range = (pages: number) => [...Array(pages).keys()];
-  //   const page = range(pages.length).map((i) => (
-  //     <div className="grid grid-cols-3 gap-4" key={i}>
-  //       {cards}
-  //     </div>
-  //   ));
-  //   return (
-  //     <>
-  //       <div className="flex flex-row justify-self-end mr-3">
-  //         <button onClick={() => slidePrev()} className="bg-gray-200 mx-1">
-  //           Prev
-  //         </button>
-  //         <span>{pages[now].timestamp}</span>
-  //         <button onClick={() => slideNext()} className="bg-gray-200 mx-1">
-  //           Next
-  //         </button>
-  //       </div>
-  //       <AliceCarousel
-  //         items={page}
-  //         disableButtonsControls
-  //         disableDotsControls
-  //         mouseTracking
-  //       />
-  //     </>
-  //   );
-  // };
-
-  // const Gallery = () => (
-  //   <AliceCarousel
-  //     mouseTracking
-  //     items={[]}
-  //   />
-  // );
-
-  // useEffect(() => {
-  //   if (!userId || !currentQuery) return;
-
-  //   fetchHistory();
-  // }, [userId, currentQuery]);
-  // else
-  return (
-    <div className="flex flex-col">
-      <div>Carousel()</div>
     </div>
   );
 }
